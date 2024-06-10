@@ -37,10 +37,9 @@ mkdir -p /run/php/ > /dev/null
 chown -R www-data:www-data /run/php/ > /dev/null
 
 chown -R www-data:www-data /var/www/wordpress > /dev/null
-chmod -R 755 /var/www/wordpress > /dev/null
+chmod -R 777 /var/www/wordpress > /dev/null
 
 echo -e "${GREEN}[PHP-FPM configuration updated ✅] ${RESET}"
-
 
 if [ ! -f "/usr/local/bin/wp" ]; then
     echo -e "${YELLOW}Installing WP-CLI...${RESET}"
@@ -52,17 +51,37 @@ else
     echo -e "${YELLOW}WP-CLI already installed. Skipping...${RESET}"
 fi
 
+while true; do
+    ping -c 1 mariadb > /dev/null
+    if [ $? -eq 0 ]; then
+        echo "[========MARIADB IS UP AND RUNNING========]"
+        break
+    else
+        echo "[========WAITING FOR MARIADB TO START...========]"
+        sleep 1
+    fi
+done
 
-if ! wp core is-installed --allow-root --path=/var/www/wordpress; then
+if ! wp core is-installed --allow-root --path=/var/www/wordpress > /dev/null 2>&1; then
     echo -e "${YELLOW}WordPress is not installed. Installing... ${RESET}"
-    wp core download --allow-root --path=/var/www/wordpress > /dev/null
-    wp config create --dbname=$SQL_DATABASE --dbuser=$SQL_USER --dbpass=$SQL_PASSWORD --dbhost=$SQL_HOST --allow-root --path=/var/www/wordpress > /dev/null
-    wp core install --url=$WP_URL --title=$WP_TITLE --admin_user=$WP_ADMIN_USER --admin_password=$WP_ADMIN_PASSWORD --admin_email=$WP_ADMIN_EMAIL --allow-root --path=/var/www/wordpress > /dev/null
-    wp user create "$WP_U_NAME" "$WP_U_EMAIL" --user_pass="$WP_U_PASSWORD" --role="$WP_U_ROLE" --allow-root  --path=/var/www/wordpress > /dev/null
+    wp core download --allow-root --path=/var/www/wordpress > /dev/null 2>&1
+    wp config create --dbname=$SQL_DATABASE --dbuser=$SQL_USER --dbpass=$SQL_PASSWORD --dbhost=$SQL_HOST --allow-root --path=/var/www/wordpress > /dev/null 2>&1
+    wp core install --url=$WP_URL --title=$WP_TITLE --admin_user=$WP_ADMIN_USER --admin_password=$WP_ADMIN_PASSWORD --admin_email=$WP_ADMIN_EMAIL --allow-root --path=/var/www/wordpress > /dev/null 2>&1
+    wp user create "$WP_U_NAME" "$WP_U_EMAIL" --user_pass="$WP_U_PASSWORD" --role="$WP_U_ROLE" --allow-root  --path=/var/www/wordpress > /dev/null  2>&1
+    wp plugin install redis-cache --allow-root --path=/var/www/wordpress > /dev/null 2>&1
+    wp plugin activate redis-cache --allow-root --path=/var/www/wordpress > /dev/null 2>&1
+    wp config set WP_REDIS_HOST redis --allow-root --add --path=/var/www/wordpress > /dev/null 2>&1
+    wp config set WP_REDIS_PORT 6379 --allow-root --add --path=/var/www/wordpress  > /dev/null 2>&1
+    wp redis enable --allow-root --path=/var/www/wordpress > /dev/null 2>&1
     echo -e "${GREEN}WordPress installation completed ✅ ${RESET}"
 else
     echo -e "${YELLOW}WordPress is already installed. Skipping... ${RESET}"
 fi
+
+chown -R www-data:www-data /var/www/wordpress > /dev/null 2>&1
+chmod -R 777 /var/www/wordpress > /dev/null 2>&1
+
+phpenmo redis > /dev/null 2>&1
 
 echo -e "${GREEN}Starting PHP-FPM... ${RESET}"
 

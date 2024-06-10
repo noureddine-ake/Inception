@@ -4,6 +4,9 @@ networks:
   warper-network:
     driver: bridge
     name: warper-network
+  ftp-network:
+    driver: bridge
+    name: ftp-network
 
 volumes:
   wordpress:
@@ -58,3 +61,26 @@ services:
     restart: unless-stopped
     expose:
       - "3306"
+  redis:
+    container_name: redis
+    networks:
+      - warper-network
+    build: ./requirements/bonus/redis
+    env_file: .env
+    restart: unless-stopped
+    depends_on:
+      - wordpress
+    expose:
+      - "6379"
+  ftp:
+    container_name: ftp
+    build: ./requirements/bonus/ftp
+    volumes:
+      - wordpress:/var/www/wordpress
+    networks:
+      - ftp-network
+    depends_on:
+      - wordpress
+    restart: unless-stopped
+    ports:
+      - "21:21"
