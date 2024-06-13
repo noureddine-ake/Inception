@@ -1,11 +1,8 @@
 
 up:
-	mkdir -p ./volumes/wordpress
-	mkdir -p ./volumes/mariadb
+	mkdir -p /home/nakebli/data/wordpress
+	mkdir -p /home/nakebli/data/mariadb
 	docker-compose -f srcs/docker-compose.yml up --build
-
-down:
-	docker-compose -f srcs/docker-compose.yml down
 
 prune:
 	docker system prune -af --volumes
@@ -19,9 +16,9 @@ clean-images: clean
 	    docker rmi $$images; \
 	fi
 
-fclean: clean-images
-	rm -rf ./volumes/mariadb/*
-	rm -rf ./volumes/wordpress/*
+fclean: clean-images clean 
+	rm -rf /home/nakebli/data/mariadb/*
+	rm -rf /home/nakebli/data/wordpress/*
 
 re: fclean up
 
