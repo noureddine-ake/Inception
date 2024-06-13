@@ -84,7 +84,6 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
-
   ftp:
     container_name: ftp
     build: ./requirements/bonus/ftp
@@ -98,3 +97,12 @@ services:
     restart: unless-stopped
     ports:
       - "21:21"
+  porteiner:
+    container_name: porteiner
+    build: requirements/bonus/porteiner
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports :
+      - "9040:9000"
+    env_file: .env
+    restart: unless-stopped

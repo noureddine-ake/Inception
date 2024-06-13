@@ -1,4 +1,3 @@
-
 up:
 	mkdir -p /home/nakebli/data/wordpress
 	mkdir -p /home/nakebli/data/mariadb

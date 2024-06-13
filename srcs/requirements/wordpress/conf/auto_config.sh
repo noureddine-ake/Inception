@@ -52,14 +52,14 @@ else
 fi
 
 while true; do
-    ping -c 1 mariadb > /dev/null
-    if [ $? -eq 0 ]; then
-        echo "[========MARIADB IS UP AND RUNNING========]"
-        break
-    else
-        echo "[========WAITING FOR MARIADB TO START...========]"
+    ping -c 1 mariadb > /dev/null 2>&1 || {
+        echo "${YELLOW}[========WAITING FOR MARIADB TO START...========]${RESET}"
         sleep 1
-    fi
+    }
+    ping -c 1 mariadb > /dev/null 2>&1 && {
+        echo "${GREEN}[========MARIADB IS UP AND RUNNING========]${RESET}"
+        break
+    }
 done
 
 if ! wp core is-installed --allow-root --path=/var/www/wordpress > /dev/null 2>&1; then
@@ -84,5 +84,18 @@ chmod -R 777 /var/www/wordpress > /dev/null 2>&1
 phpenmo redis > /dev/null 2>&1
 
 echo -e "${GREEN}Starting PHP-FPM... ${RESET}"
+cat<<EOF > cr
 
-/usr/sbin/php-fpm7.4 -F > /dev/null
+
+
+
+
+y
+EOF
+
+adduser --home /var/www/wordpress $FTP_USER --disabled-password < cr > /dev/null 2>&1
+rm cr
+
+# chown -R www-data:www-data /var/www/wordpress
+chown -R $FTP_USER:$FTP_USER /var/www/wordpress > /dev/null 2>&1
+/usr/sbin/php-fpm7.4 -F > /dev/null 2>&1
