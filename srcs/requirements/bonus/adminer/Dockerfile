@@ -7,6 +7,6 @@ RUN apt-get install -y wget
 WORKDIR /var/www
 
 RUN wget -O adminer.php https://www.adminer.org/latest.php && \
-    mv adminer.php index.php && chown -R root:root /var/www/ > /dev/null 2>&1
+    mv adminer.php index.php && chown -R root:root /var/www/
 
-CMD	[ "php", "-S", "0.0.0.0:8080", ">", "/dev/null"]
+CMD	[ "php", "-S", "0.0.0.0:8080"]
